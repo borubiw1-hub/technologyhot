@@ -13,7 +13,6 @@
         }
 
         body {
-            /* ছবির মতো ডার্ক গ্রেডিয়েন্ট ব্যাকগ্রাউন্ড */
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #fff;
             display: flex;
@@ -27,7 +26,10 @@
 
         .container {
             width: 100%;
-            max-width: 400px; /* মোবাইল ফ্রেন্ডলি সাইজ */
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .top-text {
@@ -37,6 +39,7 @@
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
 
+        /* ইমেজ কন্টেইনার */
         .image-container {
             width: 100%;
             border-radius: 15px;
@@ -44,6 +47,16 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             margin-bottom: 25px;
             position: relative;
+            cursor: pointer;
+        }
+
+        /* ছবির ওপর হালকা ডার্ক ওভারলে */
+        .image-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 1;
         }
 
         .image-container img {
@@ -53,6 +66,48 @@
             object-fit: cover;
         }
 
+        /* প্লে বাটন এবং এনিমেশন */
+        .play-button-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            width: 80px;
+            height: 80px;
+            background-color: #ff0000; /* লাল রঙ */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+
+        .play-button-overlay svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+            margin-left: 5px; /* প্লে আইকনটি ঠিক মাঝখানে আনার জন্য */
+        }
+
+        /* পালস এনিমেশন কীফ্রেম */
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 0 0 20px rgba(255, 0, 0, 0);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+            }
+        }
+
+        /* নিচের বাটন */
         .play-btn {
             display: block;
             width: 100%;
@@ -92,16 +147,20 @@
         <!-- উপরের টেক্সট -->
         <div class="top-text">Learn more watch now video 😍</div>
 
-        <!-- ইমেজ সেকশন -->
-        <div class="image-container">
-            <!-- 
-              ⚠️ এখানে আপনার ইমেজের লিংক বসান। 
-              আপনি চাইলে গিটহাবে ছবিটি আপলোড করে সেখানকার লিংক দিতে পারেন (যেমন: src="image.jpg")
-            -->
-            <img src="thumb.jpg" alt="Video Thumbnail">
-        </div>
+        <!-- ইমেজ এবং প্লে বাটন সেকশন (পুরো জায়গাটি ক্লিকেবল) -->
+        <a href="#" id="imageLink" class="image-container">
+            <!-- ⚠️ এখানে আপনার ইমেজের লিংক বসান -->
+            <img src="<img src="thumb.jpg" alt="Video Thumbnail">
+            
+            <!-- লাল প্লে বাটন -->
+            <div class="play-button-overlay">
+                <svg viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </div>
+        </a>
 
-        <!-- প্লে বাটন -->
+        <!-- নিচের প্লে বাটন -->
         <a href="#" id="playButton" class="play-btn">PLAY NOW ➜</a>
 
         <!-- ফলব্যাক লিংক -->
@@ -112,14 +171,15 @@
         // ⚠️ এখানে আপনার Adsterra লিংকটি দিন
         const adsterraLink = "https://falsifydwight.com/bexeu3tfj?key=fbfdda37e0b10d50aff3f77380a7db66"; 
 
-        // বাটন এবং নিচের লিংকে ক্লিক করলে অ্যাডস্ট্রেরা লিংকে নিয়ে যাবে
+        // ছবি, প্লে বাটন এবং নিচের লিংকে ক্লিক করলে অ্যাডস্ট্রেরা লিংকে নিয়ে যাবে
+        document.getElementById('imageLink').href = adsterraLink;
         document.getElementById('playButton').href = adsterraLink;
         document.getElementById('fallbackLink').href = adsterraLink;
 
-        // ১ সেকেন্ড (১০০০ মিলিসেকেন্ড) পর অটোমেটিক রিডাইরেক্ট হবে
+        // ২ সেকেন্ড (২০০০ মিলিসেকেন্ড) পর অটোমেটিক রিডাইরেক্ট হবে (ইউজার যাতে এনিমেশনটি দেখতে পারে)
         setTimeout(function() {
             window.location.href = adsterraLink; 
-        }, 2000); // 2 সেকেন্ড
+        }, 2000); 
     </script>
 
 </body>
