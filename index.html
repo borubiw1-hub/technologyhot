@@ -26,7 +26,7 @@
 
         .container {
             width: 100%;
-            max-width: 600px; /* কন্টেইনার একটু চওড়া করা হয়েছে যাতে পাশের বাটনগুলো ভালোভাবে বসে */
+            max-width: 600px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -59,7 +59,7 @@
         .side-btn {
             width: 40px;
             height: 40px;
-            background-color: #ff0000; /* লাল রঙ */
+            background-color: #ff0000;
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -67,6 +67,7 @@
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(255, 0, 0, 0.4);
             transition: transform 0.2s;
+            text-decoration: none;
         }
 
         .side-btn:hover {
@@ -88,12 +89,13 @@
             overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             cursor: pointer;
-            flex-shrink: 0; /* ছবি যাতে চেপে না যায় */
+            flex-shrink: 0;
+            display: block;
         }
 
         .image-container img {
             width: 100%;
-            max-width: 300px; /* ছবির সাইজ */
+            max-width: 260px; /* ছবির সাইজ একটু ছোট করা হলো যাতে পাশের বাটন বসে */
             height: auto;
             display: block;
             object-fit: cover;
@@ -105,8 +107,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 70px;
-            height: 70px;
+            width: 65px;
+            height: 65px;
             background-color: rgba(255, 0, 0, 0.9);
             border-radius: 50%;
             display: flex;
@@ -117,8 +119,8 @@
         }
 
         .center-play svg {
-            width: 35px;
-            height: 35px;
+            width: 30px;
+            height: 30px;
             fill: white;
             margin-left: 4px;
         }
@@ -165,29 +167,13 @@
         }
 
         /* মোবাইলের জন্য রেস্পন্সিভ ডিজাইন */
-        @media (max-width: 500px) {
-            .video-wrapper {
-                gap: 8px;
-            }
-            .side-btn {
-                width: 30px;
-                height: 30px;
-            }
-            .side-btn svg {
-                width: 14px;
-                height: 14px;
-            }
-            .image-container img {
-                max-width: 220px;
-            }
-            .center-play {
-                width: 55px;
-                height: 55px;
-            }
-            .center-play svg {
-                width: 25px;
-                height: 25px;
-            }
+        @media (max-width: 450px) {
+            .video-wrapper { gap: 8px; }
+            .side-btn { width: 28px; height: 28px; }
+            .side-btn svg { width: 12px; height: 12px; }
+            .image-container img { max-width: 200px; }
+            .center-play { width: 50px; height: 50px; }
+            .center-play svg { width: 22px; height: 22px; }
         }
     </style>
 </head>
@@ -202,14 +188,14 @@
             
             <!-- বাম পাশের ৪টি বাটন -->
             <div class="side-buttons">
-                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
             </div>
 
             <!-- মেইন ছবি (thumb.jpg) -->
-            <a href="#" class="image-container link-btn">
+            <a href="#" class="image-container redirect-btn">
                 <img src="thumb.jpg" alt="Video Thumbnail">
                 <!-- মাঝখানের বড় প্লে বাটন -->
                 <div class="center-play">
@@ -219,27 +205,27 @@
 
             <!-- ডান পাশের ৪টি বাটন -->
             <div class="side-buttons">
-                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
             </div>
 
         </div>
 
         <!-- নিচের মেইন প্লে বাটন -->
-        <a href="#" class="play-btn link-btn">PLAY NOW ➜</a>
+        <a href="#" class="play-btn redirect-btn">PLAY NOW ➜</a>
 
         <!-- ফলব্যাক লিংক -->
-        <a href="#" class="fallback-link link-btn">Button not working? Open it here</a>
+        <a href="#" class="fallback-link redirect-btn">Button not working? Open it here</a>
     </div>
 
     <script>
         // ⚠️ এখানে আপনার Adsterra লিংকটি দিন
         const adsterraLink = "https://falsifydwight.com/bexeu3tfj?key=fbfdda37e0b10d50aff3f77380a7db66"; 
 
-        // 'link-btn' ক্লাসযুক্ত সব বাটনে (মেইন ছবি, পাশের ৮টি বাটন, নিচের বাটন) অ্যাডস্ট্রেরা লিংক সেট করা হলো
-        const allButtons = document.querySelectorAll('.link-btn');
+        // 'redirect-btn' ক্লাসযুক্ত সব বাটনে লিংক সেট করা হলো
+        const allButtons = document.querySelectorAll('.redirect-btn');
         allButtons.forEach(btn => {
             btn.href = adsterraLink;
         });
