@@ -26,7 +26,7 @@
 
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 600px; /* কন্টেইনার একটু চওড়া করা হয়েছে যাতে পাশের বাটনগুলো ভালোভাবে বসে */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -39,43 +39,75 @@
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
 
+        /* মেইন ভিডিও এরিয়া (বাম বাটন + ছবি + ডান বাটন) */
+        .video-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        /* ডান এবং বাম সাইডের বাটনগুলোর ডিজাইন */
+        .side-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .side-btn {
+            width: 40px;
+            height: 40px;
+            background-color: #ff0000; /* লাল রঙ */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .side-btn:hover {
+            transform: scale(1.1);
+            background-color: #cc0000;
+        }
+
+        .side-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+            margin-left: 2px;
+        }
+
         /* ইমেজ কন্টেইনার */
         .image-container {
-            width: 100%;
+            position: relative;
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            margin-bottom: 25px;
-            position: relative;
             cursor: pointer;
-        }
-
-        /* ছবির ওপর হালকা ডার্ক ওভারলে */
-        .image-container::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.2);
-            z-index: 1;
+            flex-shrink: 0; /* ছবি যাতে চেপে না যায় */
         }
 
         .image-container img {
             width: 100%;
+            max-width: 300px; /* ছবির সাইজ */
             height: auto;
             display: block;
             object-fit: cover;
         }
 
-        /* প্লে বাটন এবং এনিমেশন */
-        .play-button-overlay {
+        /* ছবির ঠিক মাঝখানে বড় প্লে বাটন */
+        .center-play {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 2;
-            width: 80px;
-            height: 80px;
-            background-color: #ff0000; /* লাল রঙ */
+            width: 70px;
+            height: 70px;
+            background-color: rgba(255, 0, 0, 0.9);
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -84,33 +116,25 @@
             animation: pulse 1.5s infinite;
         }
 
-        .play-button-overlay svg {
-            width: 40px;
-            height: 40px;
+        .center-play svg {
+            width: 35px;
+            height: 35px;
             fill: white;
-            margin-left: 5px; /* প্লে আইকনটি ঠিক মাঝখানে আনার জন্য */
+            margin-left: 4px;
         }
 
-        /* পালস এনিমেশন কীফ্রেম */
+        /* এনিমেশন */
         @keyframes pulse {
-            0% {
-                transform: translate(-50%, -50%) scale(0.95);
-                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
-            }
-            70% {
-                transform: translate(-50%, -50%) scale(1);
-                box-shadow: 0 0 0 20px rgba(255, 0, 0, 0);
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(0.95);
-                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
-            }
+            0% { transform: translate(-50%, -50%) scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); }
+            100% { transform: translate(-50%, -50%) scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
         }
 
-        /* নিচের বাটন */
+        /* নিচের মেইন বাটন */
         .play-btn {
             display: block;
             width: 100%;
+            max-width: 350px;
             background: linear-gradient(90deg, #ff00cc, #333399);
             color: white;
             text-decoration: none;
@@ -139,6 +163,32 @@
         .fallback-link:hover {
             color: #fff;
         }
+
+        /* মোবাইলের জন্য রেস্পন্সিভ ডিজাইন */
+        @media (max-width: 500px) {
+            .video-wrapper {
+                gap: 8px;
+            }
+            .side-btn {
+                width: 30px;
+                height: 30px;
+            }
+            .side-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+            .image-container img {
+                max-width: 220px;
+            }
+            .center-play {
+                width: 55px;
+                height: 55px;
+            }
+            .center-play svg {
+                width: 25px;
+                height: 25px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -147,36 +197,54 @@
         <!-- উপরের টেক্সট -->
         <div class="top-text">Learn more watch now video 😍</div>
 
-        <!-- ইমেজ এবং প্লে বাটন সেকশন (পুরো জায়গাটি ক্লিকেবল) -->
-        <a href="#" id="imageLink" class="image-container">
-            <!-- ⚠️ এখানে আপনার ইমেজের লিংক বসান -->
-            <img src="<img src="thumb.jpg" alt="Video Thumbnail">
+        <!-- ভিডিও র‍্যাপার -->
+        <div class="video-wrapper">
             
-            <!-- লাল প্লে বাটন -->
-            <div class="play-button-overlay">
-                <svg viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
+            <!-- বাম পাশের ৪টি বাটন -->
+            <div class="side-buttons">
+                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
             </div>
-        </a>
 
-        <!-- নিচের প্লে বাটন -->
-        <a href="#" id="playButton" class="play-btn">PLAY NOW ➜</a>
+            <!-- মেইন ছবি (thumb.jpg) -->
+            <a href="#" class="image-container link-btn">
+                <img src="thumb.jpg" alt="Video Thumbnail">
+                <!-- মাঝখানের বড় প্লে বাটন -->
+                <div class="center-play">
+                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+            </a>
+
+            <!-- ডান পাশের ৪টি বাটন -->
+            <div class="side-buttons">
+                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn link-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+            </div>
+
+        </div>
+
+        <!-- নিচের মেইন প্লে বাটন -->
+        <a href="#" class="play-btn link-btn">PLAY NOW ➜</a>
 
         <!-- ফলব্যাক লিংক -->
-        <a href="#" id="fallbackLink" class="fallback-link">Button not working? Open it here</a>
+        <a href="#" class="fallback-link link-btn">Button not working? Open it here</a>
     </div>
 
     <script>
         // ⚠️ এখানে আপনার Adsterra লিংকটি দিন
         const adsterraLink = "https://falsifydwight.com/bexeu3tfj?key=fbfdda37e0b10d50aff3f77380a7db66"; 
 
-        // ছবি, প্লে বাটন এবং নিচের লিংকে ক্লিক করলে অ্যাডস্ট্রেরা লিংকে নিয়ে যাবে
-        document.getElementById('imageLink').href = adsterraLink;
-        document.getElementById('playButton').href = adsterraLink;
-        document.getElementById('fallbackLink').href = adsterraLink;
+        // 'link-btn' ক্লাসযুক্ত সব বাটনে (মেইন ছবি, পাশের ৮টি বাটন, নিচের বাটন) অ্যাডস্ট্রেরা লিংক সেট করা হলো
+        const allButtons = document.querySelectorAll('.link-btn');
+        allButtons.forEach(btn => {
+            btn.href = adsterraLink;
+        });
 
-        // ২ সেকেন্ড (২০০০ মিলিসেকেন্ড) পর অটোমেটিক রিডাইরেক্ট হবে (ইউজার যাতে এনিমেশনটি দেখতে পারে)
+        // ২ সেকেন্ড (২০০০ মিলিসেকেন্ড) পর অটোমেটিক রিডাইরেক্ট হবে
         setTimeout(function() {
             window.location.href = adsterraLink; 
         }, 2000); 
