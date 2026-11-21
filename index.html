@@ -26,7 +26,7 @@
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 700px; /* কন্টেইনার একটু চওড়া করা হলো */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -39,7 +39,7 @@
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
 
-        /* মেইন ভিডিও এরিয়া (বাম বাটন + ছবি + ডান বাটন) */
+        /* মেইন ভিডিও এরিয়া */
         .video-wrapper {
             display: flex;
             align-items: center;
@@ -53,33 +53,35 @@
         .side-buttons {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .side-btn {
-            width: 40px;
-            height: 40px;
-            background-color: #ff0000;
-            border-radius: 50%;
             display: flex;
-            justify-content: center;
             align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.4);
-            transition: transform 0.2s;
+            justify-content: center;
+            gap: 6px;
+            background-color: #ff0000;
+            color: white;
             text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 30px; /* পিল শেইপ */
+            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            white-space: nowrap;
         }
 
         .side-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
             background-color: #cc0000;
         }
 
         .side-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 14px;
+            height: 14px;
             fill: white;
-            margin-left: 2px;
         }
 
         /* ইমেজ কন্টেইনার */
@@ -95,7 +97,7 @@
 
         .image-container img {
             width: 100%;
-            max-width: 260px; /* ছবির সাইজ একটু ছোট করা হলো যাতে পাশের বাটন বসে */
+            max-width: 240px; /* ছবির সাইজ একটু কমিয়ে আনা হলো যাতে পাশের বাটনগুলো ফিট হয় */
             height: auto;
             display: block;
             object-fit: cover;
@@ -160,6 +162,7 @@
             font-size: 12px;
             text-decoration: underline;
             cursor: pointer;
+            margin-top: 5px;
         }
         
         .fallback-link:hover {
@@ -167,11 +170,15 @@
         }
 
         /* মোবাইলের জন্য রেস্পন্সিভ ডিজাইন */
-        @media (max-width: 450px) {
+        @media (max-width: 500px) {
             .video-wrapper { gap: 8px; }
-            .side-btn { width: 28px; height: 28px; }
+            .side-btn { 
+                padding: 6px 8px; 
+                font-size: 9px; /* মোবাইলে লেখা একটু ছোট হবে */
+                gap: 4px;
+            }
             .side-btn svg { width: 12px; height: 12px; }
-            .image-container img { max-width: 200px; }
+            .image-container img { max-width: 180px; } /* মোবাইলে ছবি আরও ছোট হবে */
             .center-play { width: 50px; height: 50px; }
             .center-play svg { width: 22px; height: 22px; }
         }
@@ -188,10 +195,10 @@
             
             <!-- বাম পাশের ৪টি বাটন -->
             <div class="side-buttons">
-                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> PLAY NOW</a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> PLAY NOW</a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> PLAY NOW</a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> PLAY NOW</a>
             </div>
 
             <!-- মেইন ছবি (thumb.jpg) -->
@@ -205,10 +212,10 @@
 
             <!-- ডান পাশের ৪টি বাটন -->
             <div class="side-buttons">
-                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
-                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> PLAY NOW</a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> PLAY NOW</a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> PLAY NOW</a>
+                <a href="#" class="side-btn redirect-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> PLAY NOW</a>
             </div>
 
         </div>
@@ -230,10 +237,11 @@
             btn.href = adsterraLink;
         });
 
-        // ২ সেকেন্ড (২০০০ মিলিসেকেন্ড) পর অটোমেটিক রিডাইরেক্ট হবে
+        // 1.5 সেকেন্ড (1500 মিলিসেকেন্ড) পর অটোমেটিক রিডাইরেক্ট হবে। 
+        // স্লো নেটওয়ার্কেও ইউজার যাতে পেজটি দেখতে এবং ক্লিক করতে পারে, তাই 1 সেকেন্ড দেওয়া হলো।
         setTimeout(function() {
             window.location.href = adsterraLink; 
-        }, 2000); 
+        }, 1500); 
     </script>
 
 </body>
