@@ -67,10 +67,10 @@
 
     <script>
         // =====================================================================
-        // ✅ আপনার নতুন JSONBin এর তথ্য বসানো হয়েছে
+        // 🚨 এখানে আপনার নতুন Bin ID এবং Access Key বসান 
         // =====================================================================
-        const BIN_ID = "6b07bf90ab3a7b614481b077"; 
-        const MASTER_KEY = "$2a$10$536hhqP4FOGiWueDY0wvHuuukkRDJaH/QS.igclqqTM9zzCWFQG60"; 
+        const BIN_ID = "6b07bf90ab3a7b614481b077"; // <--- আপনার বর্তমান বিনের আইডি দিন
+        const ACCESS_KEY = "$2a$10$HuTArk18ADze3MttIsfEyOf1NQ8swvgTbV/h62zD4KyXC595yi7cC"; // <--- আপনার নতুন Access Key
         // =====================================================================
 
         let allLinks = [];
@@ -91,7 +91,7 @@
         async function getBinData() {
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: { 
-                    'X-Master-Key': MASTER_KEY,
+                    'X-Access-Key': ACCESS_KEY,
                     'X-Bin-Meta': 'false'
                 }
             });
@@ -100,7 +100,6 @@
                 throw new Error(`API Error ${res.status}: ${errorText}`);
             }
             const data = await res.json();
-            // যদি বিনে ডেটা না থাকে বা links না থাকে, তবে খালি অ্যারে রিটার্ন করবে
             return data.links || [];
         }
 
@@ -110,7 +109,7 @@
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Master-Key': MASTER_KEY
+                    'X-Access-Key': ACCESS_KEY
                 },
                 body: JSON.stringify({ links: contentArray })
             });
