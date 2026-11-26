@@ -73,8 +73,6 @@
         const GH_OWNER = "borubiw1-hub"; 
         const GH_REPO = "technologyhot";
         const FILE_PATH = 'links.json';
-        
-        // 🚨 যদি আপনার রিপোজিটরির ব্রাঞ্চ 'main' না হয়ে 'master' হয়, তবে নিচের লাইনে 'main' এর জায়গায় 'master' লিখুন
         const GH_BRANCH = 'main'; 
         // =====================================================================
 
@@ -86,8 +84,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const shortCode = urlParams.get('go');
         if (shortCode) {
-            document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>";
-            // সরাসরি গিটহাবের Raw ফাইল থেকে ডেটা নিয়ে রিডাইরেক্ট করা হচ্ছে (সবচেয়ে নির্ভরযোগ্য উপায়)
+            document.body.innerHTML = `
+                <div style='text-align:center; margin-top:100px; color:white; font-family:sans-serif;'>
+                    <h2><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>
+                    <p style='color:#64748b; margin-top:10px;'>Please wait...</p>
+                    <a href="./" style="color:#38bdf8; margin-top: 30px; display: inline-block; text-decoration: none; background: #1e293b; padding: 10px 20px; border-radius: 8px;">← Back to Dashboard</a>
+                </div>
+            `;
+            
+            // সরাসরি গিটহাবের Raw ফাইল থেকে ডেটা নিয়ে রিডাইরেক্ট করা হচ্ছে
             const rawUrl = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${FILE_PATH}`;
             fetch(rawUrl + '?t=' + Date.now())
                 .then(res => res.json())
@@ -96,10 +101,10 @@
                     if (link) {
                         window.location.replace(link.target);
                     } else {
-                        document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2>";
+                        document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
                     }
                 }).catch(() => {
-                    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Error loading data! Make sure links.json exists.</h2>";
+                    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Error loading data!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
                 });
         } else {
             // ড্যাশবোর্ড লোড
@@ -125,7 +130,6 @@
                     Accept: "application/vnd.github.v3+json"
                 }
             });
-            // ফাইল না থাকলে খালি অ্যারে রিটার্ন করবে
             if (res.status === 404) return { content: [], sha: null };
             
             if (!res.ok) {
@@ -137,7 +141,7 @@
             return { content: JSON.parse(contentStr), sha: data.sha };
         }
 
-        // গিটহাবে ডেটা সেভ করা (বাগ ফিক্স করা হয়েছে)
+        // গিটহাবে ডেটা সেভ করা
         async function saveGitHubFile(contentArray, commitMessage) {
             const { sha } = await getGitHubFile(); 
             const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(contentArray, null, 2))));
@@ -148,7 +152,6 @@
                 branch: GH_BRANCH 
             };
             
-            // 🚨 গুরুত্বপূর্ণ: ফাইল আগে থেকে থাকলে (sha থাকলে) তবেই sha পাঠাতে হবে। নতুন ফাইলে sha পাঠালে এরর হয়।
             if (sha) {
                 bodyData.sha = sha;
             }
@@ -227,6 +230,7 @@
                     </td>
                     <td class="p-4">
                         <div class="flex items-center justify-end gap-2">
+                            <!-- এডিট এবং ডিলিট বাটন -->
                             <button onclick="toggleEditRow('${link.code}')" class="icon-btn hover:text-sky-400 hover:border-sky-400" title="Edit URL"><i class="fa-solid fa-pen text-xs"></i></button>
                             <button onclick="deleteLink('${link.code}')" class="icon-btn hover:text-red-400 hover:border-red-400" title="Delete"><i class="fa-regular fa-trash-can text-xs"></i></button>
                         </div>
@@ -234,15 +238,16 @@
                 `;
                 tbody.appendChild(row);
 
+                // এডিট বক্স (লুকানো থাকবে)
                 const editRow = document.createElement('tr');
                 editRow.id = `edit-row-${link.code}`;
                 editRow.className = 'edit-row hidden';
                 editRow.innerHTML = `
                     <td colspan="4" class="p-6">
-                        <div class="flex flex-col gap-3 max-w-4xl">
+                        <div class="flex flex-col gap-3 max-w-4xl bg-[#0b1120] p-4 rounded-lg border border-slate-700">
                             <label class="text-xs text-sky-500 font-bold uppercase tracking-wider"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit Destination URL</label>
                             <div class="flex flex-col md:flex-row gap-3">
-                                <input type="url" id="edit-target-${link.code}" value="${link.target}" class="flex-1 bg-[#0b1120] border border-[#334155] rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-sky-500">
+                                <input type="url" id="edit-target-${link.code}" value="${link.target}" class="flex-1 bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-sky-500">
                                 <button onclick="toggleEditRow('${link.code}')" class="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition">Cancel</button>
                                 <button onclick="saveEdit('${link.code}')" class="bg-sky-600 hover:bg-sky-500 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition">Save changes</button>
                             </div>
@@ -253,6 +258,7 @@
             });
         }
 
+        // এডিট বক্স ওপেন/ক্লোজ
         function toggleEditRow(code) {
             const row = document.getElementById(`edit-row-${code}`);
             if (currentlyEditingCode && currentlyEditingCode !== code) {
@@ -267,6 +273,7 @@
             }
         }
 
+        // এডিট সেভ করা
         async function saveEdit(code) {
             const newTarget = document.getElementById(`edit-target-${code}`).value.trim();
             if (!newTarget) return showToast("URL খালি রাখা যাবে না", "error");
@@ -283,6 +290,7 @@
             } catch (e) { showToast(e.message, "error"); }
         }
 
+        // লিংক ডিলিট করা
         async function deleteLink(code) {
             if (!confirm("আপনি কি নিশ্চিতভাবে এই লিংকটি ডিলিট করতে চান?")) return;
             try {
@@ -294,6 +302,7 @@
             } catch (e) { showToast(e.message, "error"); }
         }
 
+        // নতুন লিংক তৈরি
         async function createShortLink() {
             const target = document.getElementById('longUrl').value.trim();
             let customCode = document.getElementById('customCode').value.trim().toLowerCase();
