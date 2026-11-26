@@ -67,9 +67,9 @@
 
     <script>
         // =====================================================================
-        // ✅ আপনার দেওয়া তথ্য
+        // 🚨 এখানে নতুন টোকেন বসান (আর কাউকে দেবেন না)
         // =====================================================================
-        const GH_TOKEN = "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"; 
+        const GH_TOKEN = "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"; 
         const GH_OWNER = "borubiw1-hub"; 
         const GH_REPO = "technologyhot";
         const FILE_PATH = 'links.json';
@@ -92,7 +92,6 @@
                 </div>
             `;
             
-            // সরাসরি গিটহাবের Raw ফাইল থেকে ডেটা নিয়ে রিডাইরেক্ট করা হচ্ছে
             const rawUrl = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${FILE_PATH}`;
             fetch(rawUrl + '?t=' + Date.now())
                 .then(res => res.json())
@@ -107,11 +106,9 @@
                     document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Error loading data!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
                 });
         } else {
-            // ড্যাশবোর্ড লোড
             loadDashboardData();
         }
 
-        // নোটিফিকেশন দেখানোর ফাংশন
         function showToast(msg, type = 'success') {
             const box = document.getElementById('toastBox');
             const toast = document.createElement('div');
@@ -122,7 +119,6 @@
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // গিটহাব থেকে ডেটা পড়া
         async function getGitHubFile() {
             const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${FILE_PATH}?ref=${GH_BRANCH}`, {
                 headers: { 
@@ -141,7 +137,6 @@
             return { content: JSON.parse(contentStr), sha: data.sha };
         }
 
-        // গিটহাবে ডেটা সেভ করা
         async function saveGitHubFile(contentArray, commitMessage) {
             const { sha } = await getGitHubFile(); 
             const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(contentArray, null, 2))));
@@ -171,7 +166,6 @@
             }
         }
 
-        // ড্যাশবোর্ডে ডেটা দেখানো
         async function loadDashboardData() {
             const tbody = document.getElementById('linksTable');
             tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading from GitHub...</td></tr>';
@@ -189,7 +183,6 @@
             }
         }
 
-        // টেবিল রেন্ডার করা
         function renderTable() {
             const tbody = document.getElementById('linksTable');
             tbody.innerHTML = '';
@@ -230,7 +223,6 @@
                     </td>
                     <td class="p-4">
                         <div class="flex items-center justify-end gap-2">
-                            <!-- এডিট এবং ডিলিট বাটন -->
                             <button onclick="toggleEditRow('${link.code}')" class="icon-btn hover:text-sky-400 hover:border-sky-400" title="Edit URL"><i class="fa-solid fa-pen text-xs"></i></button>
                             <button onclick="deleteLink('${link.code}')" class="icon-btn hover:text-red-400 hover:border-red-400" title="Delete"><i class="fa-regular fa-trash-can text-xs"></i></button>
                         </div>
@@ -238,7 +230,6 @@
                 `;
                 tbody.appendChild(row);
 
-                // এডিট বক্স (লুকানো থাকবে)
                 const editRow = document.createElement('tr');
                 editRow.id = `edit-row-${link.code}`;
                 editRow.className = 'edit-row hidden';
@@ -258,7 +249,6 @@
             });
         }
 
-        // এডিট বক্স ওপেন/ক্লোজ
         function toggleEditRow(code) {
             const row = document.getElementById(`edit-row-${code}`);
             if (currentlyEditingCode && currentlyEditingCode !== code) {
@@ -273,7 +263,6 @@
             }
         }
 
-        // এডিট সেভ করা
         async function saveEdit(code) {
             const newTarget = document.getElementById(`edit-target-${code}`).value.trim();
             if (!newTarget) return showToast("URL খালি রাখা যাবে না", "error");
@@ -290,7 +279,6 @@
             } catch (e) { showToast(e.message, "error"); }
         }
 
-        // লিংক ডিলিট করা
         async function deleteLink(code) {
             if (!confirm("আপনি কি নিশ্চিতভাবে এই লিংকটি ডিলিট করতে চান?")) return;
             try {
@@ -302,7 +290,6 @@
             } catch (e) { showToast(e.message, "error"); }
         }
 
-        // নতুন লিংক তৈরি
         async function createShortLink() {
             const target = document.getElementById('longUrl').value.trim();
             let customCode = document.getElementById('customCode').value.trim().toLowerCase();
