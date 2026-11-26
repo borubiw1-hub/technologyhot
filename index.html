@@ -42,24 +42,16 @@
             </button>
         </div>
 
-        <!-- Info Banner (Updated) -->
-        <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-4 mb-6 text-sm flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-                <p class="text-white font-bold mb-1"><i class="fa-solid fa-circle-check text-emerald-400"></i> গুগলের অফিসিয়াল লিংক জেনারেটর:</p>
-                <p class="text-slate-400 text-xs">এখন আপনার ড্যাশবোর্ড থেকেই স্বয়ংক্রিয়ভাবে গুগলের (search.app) আসল ডিপ-লিংক তৈরি হবে। মোবাইলে এটি ক্লিক করলে সরাসরি গুগল অ্যাপে বা ব্রাউজারে ওপেন হবে।</p>
-            </div>
-        </div>
-
         <!-- Data Table -->
         <div class="table-container">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead class="table-header">
                         <tr>
-                            <th class="p-4 w-[40%]">Original URL</th>
-                            <th class="p-4 w-[35%]">Short Links (Google & Direct)</th>
+                            <th class="p-4 w-[35%]">Original URL</th>
+                            <th class="p-4 w-[45%]">Generated Links</th>
                             <th class="p-4 w-[10%] text-center">Clicks</th>
-                            <th class="p-4 w-[15%] text-right">Actions</th>
+                            <th class="p-4 w-[10%] text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="linksTable">
@@ -125,14 +117,14 @@
             }
         }
 
-        // ১. রিডাইরেক্ট লজিক (?go=slug)
+        // ১. রিডাইরেক্ট লজিক
         const urlParams = new URLSearchParams(window.location.search);
         const shortCodeQuery = urlParams.get('go');
         
         const hash = window.location.hash;
         let shortCodeHash = null;
-        if (hash && hash.includes('vs=')) {
-            shortCodeHash = hash.split('vs=')[1];
+        if (hash && hash.includes('q=')) {
+            shortCodeHash = hash.split('q=')[1];
         }
 
         const activeCode = shortCodeQuery || shortCodeHash;
@@ -190,8 +182,10 @@
             allLinks.forEach(link => {
                 const directShortLink = `${baseUrl}?go=${link.code}`;
                 
-                // 💡 মূল পরিবর্তন: এখানে গুগলের আসল অফিসিয়াল search.app ডিপ-লিংক তৈরি হচ্ছে
-                const googleShortLink = `https://search.app/?link=${encodeURIComponent(link.target)}`;
+                // 💡 আপনার চাওয়া অনুযায়ী লিংক ফরম্যাট
+                const googleShareLink = `https://www.google.com/share.google?q=${link.code}`;
+                // search.app লিংকের ভেতরে গুগলের লিংকটি র‍্যাপ করা হলো
+                const searchAppLink = `https://search.app/?link=${encodeURIComponent(googleShareLink)}`;
                 
                 let domain = "link";
                 try { domain = new URL(link.target).hostname.replace('www.', ''); } catch(e) {}
@@ -204,21 +198,26 @@
                         <div class="flex items-center gap-3">
                             <img src="${faviconUrl}" class="w-8 h-8 rounded-lg bg-[#1e293b] p-1" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2881/2881142.png'">
                             <div class="min-w-0">
-                                <div class="text-sky-400 font-bold text-sm truncate w-64 md:w-96" title="${link.target}">${link.target}</div>
-                                <div class="text-xs text-slate-500 mt-0.5">${domain}</div>
+                                <div class="text-sky-400 font-bold text-sm truncate w-48 md:w-64" title="${link.target}">${link.target}</div>
+                                <div class="text-xs text-slate-500 mt-0.5">${domain} | Code: <span class="text-slate-400">${link.code}</span></div>
                             </div>
                         </div>
                     </td>
                     <td class="p-4">
                         <div class="flex flex-col gap-2">
-                            <!-- গুগল লিংক বাটন -->
+                            <!-- Google Share Link -->
                             <div class="flex items-center gap-2">
-                                <span class="text-blue-400 font-mono text-[11px] bg-blue-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${googleShortLink}">search.app/?link=...</span>
-                                <button onclick="copyText('${googleShortLink}')" class="icon-btn hover:text-blue-400 hover:border-blue-400" title="Copy Google Link"><i class="fa-brands fa-google text-xs"></i></button>
+                                <span class="text-blue-400 font-mono text-[10px] bg-blue-500/10 px-2 py-1 rounded truncate w-48 md:w-72" title="${googleShareLink}">google.com/share.google?q=${link.code}</span>
+                                <button onclick="copyText('${googleShareLink}')" class="icon-btn hover:text-blue-400 hover:border-blue-400" title="Copy Google Link"><i class="fa-brands fa-google text-xs"></i></button>
                             </div>
-                            <!-- ডাইরেক্ট লিংক বাটন -->
+                            <!-- Search.app Link -->
                             <div class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${directShortLink}">Direct Link</span>
+                                <span class="text-purple-400 font-mono text-[10px] bg-purple-500/10 px-2 py-1 rounded truncate w-48 md:w-72" title="${searchAppLink}">search.app/?link=...</span>
+                                <button onclick="copyText('${searchAppLink}')" class="icon-btn hover:text-purple-400 hover:border-purple-400" title="Copy Search.app Link"><i class="fa-solid fa-magnifying-glass text-xs"></i></button>
+                            </div>
+                            <!-- Direct Link -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-2 py-1 rounded truncate w-48 md:w-72" title="${directShortLink}">Direct Link</span>
                                 <button onclick="copyText('${directShortLink}')" class="icon-btn hover:text-emerald-400 hover:border-emerald-400" title="Copy Direct Link"><i class="fa-regular fa-copy text-xs"></i></button>
                             </div>
                         </div>
@@ -301,7 +300,11 @@
             let customCode = document.getElementById('customCode').value.trim().toLowerCase();
             
             if (!target) return showToast("অনুগ্রহ করে একটি লিংক দিন", "error");
-            if (!customCode) customCode = Math.random().toString(36).substring(2, 7);
+            
+            // 💡 ওদের মতো লম্বা র‍্যান্ডম কোড তৈরি করা হচ্ছে (১৭ অক্ষরের)
+            if (!customCode) {
+                customCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 6);
+            }
 
             const btn = document.getElementById('createBtn');
             const btnText = document.getElementById('btnText');
