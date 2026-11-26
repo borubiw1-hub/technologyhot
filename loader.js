@@ -1,11 +1,11 @@
 (async function() {
-    // 🚨 তোমার JSONBin Details
+    // 🚨 তোমার নতুন JSONBin Details
     const BIN_ID = "6b07bf90ab3a7b614481b077"; 
-    const ACCESS_KEY = "$2a$10$HuTArk18ADze3MttIsfEyOf1NQ8swvgTbV/h62zD4KyXC595yi7cC"; 
+    const ACCESS_KEY = "$2a$10$CNA2OL0KRF4Z4HTFg1ZUm.YruuiBTLxTC8Pb0i/8ut98glgn/HNoS"; 
 
     const hash = window.location.hash;
     let shortCode = null;
-    if (hash && (hash.includes('vs=') || hash.includes('share='))) {
+    if (hash && (hash.includes('vs=') || hash.includes('share=') || hash.includes('q='))) {
         shortCode = hash.split('=')[1];
     }
 
@@ -57,13 +57,13 @@
             if (!popup) throw new Error("Popup blocked! Please allow popups.");
 
             let attempts = 0;
-            const maxAttempts = 30; // ১৫ সেকেন্ড অপেক্ষা করবে
+            const maxAttempts = 40; // ২০ সেকেন্ড অপেক্ষা করবে
             let clickedDots = false;
             let clickedShareMenu = false;
             
             const checkInterval = setInterval(() => {
                 attempts++;
-                progressBar.style.width = `${30 + (attempts * 2)}%`; 
+                progressBar.style.width = `${30 + (attempts * 1.5)}%`; 
                 statusText.innerText = `Automating Google... (${attempts}s)`;
                 
                 try {
@@ -80,9 +80,9 @@
 
                     // 🌟 ২. গুগলের ৩ ডট (More options) বাটন খোঁজা
                     if (!clickedDots) {
-                        // আমরা সরাসরি ইউটিউব কার্ডের পাশের ৩ ডট খুঁজব
                         let moreBtn = doc.querySelector('div[aria-label="More options"]') || 
-                                      doc.querySelector('div[aria-label="More"]');
+                                      doc.querySelector('div[aria-label="More"]') ||
+                                      doc.querySelector('div[aria-label="আরও অপশন"]');
                         
                         if (moreBtn) {
                             moreBtn.click();
@@ -93,7 +93,6 @@
                     
                     // 🌟 ৩. ৩ ডটে ক্লিক করার পর Share অপশন খোঁজা
                     if (clickedDots && !clickedShareMenu) {
-                        // মেনু ওপেন হওয়ার পর 'Share' লেখা ডিভ খোঁজা
                         let shareOption = Array.from(doc.querySelectorAll('div[role="menuitem"], div[role="button"], span')).find(el => {
                             const text = el.innerText?.trim().toLowerCase();
                             return text === 'share' || text === 'শেয়ার';
@@ -108,17 +107,18 @@
                     }
 
                 } catch (err) {
-                    // Cross-origin errors or not fully loaded
+                    // Cross-origin errors: ব্রাউজার গুগলের DOM রিড করতে দেবে না। 
+                    // তাই এই অংশে এরর আসলে আমরা কিছু করব না, ইউজার ম্যানুয়ালি ক্লিক করলে লিংক ধরতে পারব।
                 }
 
                 if (attempts >= maxAttempts) {
                     clearInterval(checkInterval);
-                    statusText.innerText = "❌ Timeout! Share link not found.";
+                    statusText.innerText = "❌ Timeout! Please click Share manually.";
                     startBtn.innerText = "Retry";
                     startBtn.disabled = false;
                     progressBar.style.background = '#ef4444';
                 }
-            }, 500); // প্রতি ০.৫ সেকেন্ড পর পর চেক করবে
+            }, 500); 
 
             function finishProcess(shareLink, popupWindow) {
                 progressBar.style.width = '100%';
@@ -134,8 +134,7 @@
                     document.getElementById('copyBtn').innerText = "Copied ✓";
                 };
 
-                // কাজ শেষ, পপআপ ক্লোজ করে দিব
-                setTimeout(() => popupWindow.close(), 1500);
+                setTimeout(() => { try { popupWindow.close(); } catch(e){} }, 1500);
             }
 
         } catch (err) {
