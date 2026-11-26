@@ -20,7 +20,21 @@
 </head>
 <body class="min-h-screen p-4 md:p-8">
 
-    <div class="max-w-7xl mx-auto">
+    <!-- Login Screen (Hidden by default) -->
+    <div id="loginScreen" class="fixed inset-0 bg-[#0b1120] z-50 flex items-center justify-center hidden">
+        <div class="bg-[#0f172a] p-8 rounded-xl border border-[#1e293b] shadow-2xl w-full max-w-sm mx-4">
+            <div class="flex justify-center mb-4">
+                <div class="bg-red-500 p-3 rounded-xl shadow-lg shadow-red-500/20"><i class="fa-brands fa-youtube text-white text-2xl"></i></div>
+            </div>
+            <h2 class="text-white text-xl font-bold mb-6 text-center">Admin Login</h2>
+            <input type="password" id="passwordInput" onkeypress="handleEnter(event)" class="w-full bg-[#0b1120] border border-[#1e293b] rounded-lg px-4 py-3 text-white mb-4 outline-none focus:border-sky-500 transition" placeholder="Enter Password">
+            <button onclick="checkPassword()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-lg transition">Login</button>
+            <p id="loginError" class="text-red-500 text-xs text-center mt-3 hidden">ভুল পাসওয়ার্ড!</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="mainDashboard" class="max-w-7xl mx-auto hidden">
         <!-- Header -->
         <div class="flex items-center justify-between mb-8 border-b border-slate-800 pb-4">
             <div class="flex items-center gap-3">
@@ -30,6 +44,9 @@
                     <p class="text-xs text-slate-400">Shorten and manage your links securely.</p>
                 </div>
             </div>
+            <button onclick="logout()" class="text-slate-400 hover:text-red-400 text-sm font-bold flex items-center gap-2 transition px-3 py-2 rounded-lg hover:bg-red-500/10">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
 
         <!-- Create Link Box -->
@@ -84,15 +101,84 @@
         const ACCESS_KEY = "$2a$10$bDswldQGUS.Jq.MHZA.pzO06s5BwNowwkvxyN9MjfWxL5IRPCVdly"; 
         // =====================================================================
 
+        // 🔐 ড্যাশবোর্ডের পাসওয়ার্ড (এখানে পরিবর্তন করুন)
+        const ADMIN_PASSWORD = "admin123"; 
+
         let allLinks = [];
         let currentlyEditingCode = null;
         const baseUrl = window.location.origin + window.location.pathname;
 
         // --- বুকমার্কলেট জেনারেটর (Bookmarklet Logic) ---
-        // এখানে 'pinurl' এর পরিবর্তে 'vs' (Video Shortener) ব্যবহার করা হয়েছে 
         const bmCode = `javascript:(function(){var h=window.location.hash;if(h&&h.includes('vs=')){var c=h.split('vs=')[1];fetch('https://api.jsonbin.io/v3/b/${BIN_ID}/latest',{headers:{'X-Access-Key':'${ACCESS_KEY}','X-Bin-Meta':'false'}}).then(r=>r.json()).then(d=>{var l=d.links.find(x=>x.code===c);if(l){window.location.href=l.target}else{alert('Link Not Found!')}}).catch(e=>alert('Error!'))}else{alert('No Video Shortener Link found in address bar!')}})();`;
         document.getElementById('bookmarkletBtn').href = bmCode;
 
+        // --- লগিন সিস্টেম লজিক ---
+        function handleEnter(e) {
+            if (e.key === 'Enter') checkPassword();
+        }
+
+        function checkPassword() {
+            const pass = document.getElementById('passwordInput').value;
+            if (pass === ADMIN_PASSWORD) {
+                localStorage.setItem('dashboardAuth', 'true');
+                showDashboard();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('dashboardAuth');
+            window.location.reload();
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            loadDashboardData();
+        }
+
+        // --- রিডাইরেক্ট লজিক এবং পেজ লোড ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const shortCodeQuery = urlParams.get('go');
+        const hash = window.location.hash;
+        let shortCodeHash = null;
+        
+        if (hash && hash.includes('vs=')) {
+            shortCodeHash = hash.split('vs=')[1];
+        }
+
+        const activeCode = shortCodeQuery || shortCodeHash;
+
+        if (activeCode) {
+            // যদি ইউজার লিংকে ক্লিক করে আসে, তবে সোজা রিডাইরেক্ট হবে (লগিন লাগবে না)
+            document.body.innerHTML = `
+                <div style='text-align:center; margin-top:100px; color:white; font-family:sans-serif;'>
+                    <h2><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>
+                    <p style='color:#64748b; margin-top:10px;'>Please wait...</p>
+                </div>
+            `;
+            getBinData().then(data => {
+                const link = data.find(l => l.code === activeCode);
+                if (link) {
+                    const index = data.findIndex(l => l.code === activeCode);
+                    data[index].clicks = (data[index].clicks || 0) + 1;
+                    saveBinData(data).catch(e => console.log("Click update failed"));
+                    window.location.replace(link.target);
+                } else {
+                    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
+                }
+            }).catch(e => {
+                document.body.innerHTML = `<h2 style='text-align:center;margin-top:50px;color:white;'>${e.message}</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>`;
+            });
+        } else {
+            // ড্যাশবোর্ডে ঢোকার সময় অথেন্টিকেশন চেক
+            if (localStorage.getItem('dashboardAuth') === 'true') {
+                showDashboard();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
+            }
+        }
 
         function showToast(msg, type = 'success') {
             const box = document.getElementById('toastBox');
@@ -134,43 +220,6 @@
             }
         }
 
-        // ১. রিডাইরেক্ট লজিক (ডাইরেক্ট ?go=slug এবং হ্যাশ #vs=slug দুটোই সাপোর্ট করবে)
-        const urlParams = new URLSearchParams(window.location.search);
-        const shortCodeQuery = urlParams.get('go');
-        const hash = window.location.hash;
-        let shortCodeHash = null;
-        
-        // এখানে 'pinurl=' এর পরিবর্তে 'vs=' চেক করা হচ্ছে
-        if (hash && hash.includes('vs=')) {
-            shortCodeHash = hash.split('vs=')[1];
-        }
-
-        const activeCode = shortCodeQuery || shortCodeHash;
-
-        if (activeCode) {
-            document.body.innerHTML = `
-                <div style='text-align:center; margin-top:100px; color:white; font-family:sans-serif;'>
-                    <h2><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>
-                    <p style='color:#64748b; margin-top:10px;'>Please wait...</p>
-                </div>
-            `;
-            getBinData().then(data => {
-                const link = data.find(l => l.code === activeCode);
-                if (link) {
-                    const index = data.findIndex(l => l.code === activeCode);
-                    data[index].clicks = (data[index].clicks || 0) + 1;
-                    saveBinData(data).catch(e => console.log("Click update failed"));
-                    window.location.replace(link.target);
-                } else {
-                    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
-                }
-            }).catch(e => {
-                document.body.innerHTML = `<h2 style='text-align:center;margin-top:50px;color:white;'>${e.message}</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>`;
-            });
-        } else {
-            loadDashboardData();
-        }
-
         async function loadDashboardData() {
             const tbody = document.getElementById('linksTable');
             tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading...</td></tr>';
@@ -198,9 +247,7 @@
             }
 
             allLinks.forEach(link => {
-                // দুই ধরনের লিংক তৈরি
                 const directShortLink = `${baseUrl}?go=${link.code}`;
-                // এখানে 'pinurl=' এর পরিবর্তে 'vs=' ব্যবহার করা হয়েছে
                 const googleShortLink = `https://www.google.com/#vs=${link.code}`;
                 
                 let domain = "link";
@@ -226,9 +273,9 @@
                                 <span class="text-blue-400 font-mono text-[11px] bg-blue-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${googleShortLink}">google.com/#vs=${link.code}</span>
                                 <button onclick="copyText('${googleShortLink}')" class="icon-btn hover:text-blue-400 hover:border-blue-400" title="Copy Google Link"><i class="fa-brands fa-google text-xs"></i></button>
                             </div>
-                            <!-- ডাইরেক্ট লিংক বাটন -->
+                            <!-- ডাইরেক্ট লিংক বাটন (এখন সরাসরি লিংক দেখাবে) -->
                             <div class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${directShortLink}">Direct Link</span>
+                                <span class="text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${directShortLink}">${directShortLink}</span>
                                 <button onclick="copyText('${directShortLink}')" class="icon-btn hover:text-emerald-400 hover:border-emerald-400" title="Copy Direct Link"><i class="fa-regular fa-copy text-xs"></i></button>
                             </div>
                         </div>
