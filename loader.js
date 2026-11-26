@@ -15,7 +15,7 @@
     const ui = document.createElement('div');
     ui.style.cssText = 'position:fixed; top:20px; right:20px; background:#ffffff; color:#333; padding:20px; border-radius:12px; z-index:999999; border:1px solid #e2e8f0; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); font-family:sans-serif; width:350px;';
     ui.innerHTML = `
-        <h3 style="margin:0 0 10px 0; color:#2563eb; font-size:16px; font-weight:bold;">Pinurl ➔ share.google</h3>
+        <h3 style="margin:0 0 10px 0; color:#2563eb; font-size:16px; font-weight:bold;">Auto ➔ share.google</h3>
         <button id="startBtn" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Start</button>
         <span id="statusText" style="font-size:12px; color:#64748b; margin-left:10px;">Ready</span>
         <div style="margin-top:15px; width:100%; background:#e2e8f0; height:8px; border-radius:4px; overflow:hidden;">
@@ -48,62 +48,67 @@
             const link = data.links.find(l => l.code === shortCode);
 
             if (!link) throw new Error("Link not found in database!");
-            if (!link.target.includes('youtube.com') && !link.target.includes('youtu.be')) {
-                alert("⚠️ share.google লিংক সাধারণত শুধুমাত্র ইউটিউব ভিডিওর জন্য কাজ করে। অন্য লিংক দিলে শেয়ার বাটন নাও আসতে পারে।");
-            }
-
+            
             progressBar.style.width = '30%';
-            statusText.innerText = "Opening Google...";
+            statusText.innerText = "Opening Google Search...";
 
-            const popup = window.open('https://www.google.com/search?q=' + encodeURIComponent(link.target), 'GoogleShareGen', 'width=800,height=600');
+            // গুগল পপআপ ওপেন
+            const popup = window.open('https://www.google.com/search?q=' + encodeURIComponent(link.target), 'GoogleShareGen', 'width=900,height=700');
             if (!popup) throw new Error("Popup blocked! Please allow popups.");
 
             let attempts = 0;
-            const maxAttempts = 30; // ৩০ বার চেষ্টা করবে (প্রায় ১৫ সেকেন্ড)
-            let shareBtnClicked = false;
+            const maxAttempts = 30; // ১৫ সেকেন্ড অপেক্ষা করবে
+            let clickedDots = false;
+            let clickedShareMenu = false;
             
             const checkInterval = setInterval(() => {
                 attempts++;
-                progressBar.style.width = `${30 + (attempts * 2)}%`; // প্রোগ্রেস বার বাড়বে
-                statusText.innerText = `Searching... (${attempts}/${maxAttempts})`;
+                progressBar.style.width = `${30 + (attempts * 2)}%`; 
+                statusText.innerText = `Automating Google... (${attempts}s)`;
                 
                 try {
                     const doc = popup.document;
-                    if (!doc) return; // পপআপ এখনো রেডি নয়
+                    if (!doc || !doc.body) return; // পপআপ লোড না হলে স্কিপ
 
-                    // 🌟 ১. পেজের ভেতরে share.google লিংক খোঁজা (Regex দিয়ে)
+                    // 🌟 ১. আগে চেক করি লিংক চলে এসেছে কিনা
                     let match = doc.body.innerText.match(/https:\/\/share\.google\/[a-zA-Z0-9_-]+/);
                     if (match) {
                         clearInterval(checkInterval);
-                        const shareLink = match[0];
-                        finishProcess(shareLink, popup);
+                        finishProcess(match[0], popup);
                         return;
                     }
 
-                    // 🌟 ২. যদি লিংক না পাওয়া যায়, তবে Share বাটন খুঁজে ক্লিক করা
-                    if (!shareBtnClicked) {
+                    // 🌟 ২. গুগলের ৩ ডট (More options) বাটন খোঁজা
+                    if (!clickedDots) {
+                        // আমরা সরাসরি ইউটিউব কার্ডের পাশের ৩ ডট খুঁজব
                         let moreBtn = doc.querySelector('div[aria-label="More options"]') || 
-                                      doc.querySelector('div[aria-label="More"]') ||
-                                      Array.from(doc.querySelectorAll('div[role="button"]')).find(el => el.getAttribute('aria-label')?.includes('More'));
-
-                        let shareBtn = doc.querySelector('div[aria-label="Share"]') || 
-                                       Array.from(doc.querySelectorAll('div[role="button"]')).find(el => el.innerText.includes('Share'));
-
-                        if (shareBtn) {
-                            shareBtn.click();
-                            shareBtnClicked = true;
-                        } else if (moreBtn) {
+                                      doc.querySelector('div[aria-label="More"]');
+                        
+                        if (moreBtn) {
                             moreBtn.click();
-                            shareBtnClicked = true; 
-                            setTimeout(() => {
-                                let menuShare = Array.from(doc.querySelectorAll('div[role="menuitem"], div[role="button"]')).find(el => el.innerText.includes('Share') || el.innerText.includes('শেয়ার'));
-                                if (menuShare) menuShare.click();
-                            }, 500);
+                            clickedDots = true;
+                            statusText.innerText = "Clicked 3 dots, looking for Share...";
+                        }
+                    } 
+                    
+                    // 🌟 ৩. ৩ ডটে ক্লিক করার পর Share অপশন খোঁজা
+                    if (clickedDots && !clickedShareMenu) {
+                        // মেনু ওপেন হওয়ার পর 'Share' লেখা ডিভ খোঁজা
+                        let shareOption = Array.from(doc.querySelectorAll('div[role="menuitem"], div[role="button"], span')).find(el => {
+                            const text = el.innerText?.trim().toLowerCase();
+                            return text === 'share' || text === 'শেয়ার';
+                        });
+
+                        if (shareOption) {
+                            shareOption.click();
+                            clickedShareMenu = true;
+                            statusText.innerText = "Clicked Share, generating link...";
+                            progressBar.style.width = '80%';
                         }
                     }
 
                 } catch (err) {
-                    // ক্রস-অরিজিন এরর হলে ইগনোর করব, পপআপ লোড হতে সময় দিব
+                    // Cross-origin errors or not fully loaded
                 }
 
                 if (attempts >= maxAttempts) {
@@ -118,7 +123,7 @@
             function finishProcess(shareLink, popupWindow) {
                 progressBar.style.width = '100%';
                 progressBar.style.background = '#22c55e';
-                statusText.innerText = "Done: 1/1";
+                statusText.innerText = "✅ Done! Link Copied.";
                 startBtn.style.display = 'none';
                 resultBox.style.display = 'block';
                 shareLinkInput.value = shareLink;
@@ -129,6 +134,7 @@
                     document.getElementById('copyBtn').innerText = "Copied ✓";
                 };
 
+                // কাজ শেষ, পপআপ ক্লোজ করে দিব
                 setTimeout(() => popupWindow.close(), 1500);
             }
 
