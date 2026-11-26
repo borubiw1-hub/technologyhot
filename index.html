@@ -67,7 +67,7 @@
 
     <script>
         // =====================================================================
-        // 🚨 আপনার JSONBin এর সঠিক ID এবং Access Key বসানো হয়েছে
+        // 🚨 আপনার JSONBin Details (গিটহাবে আপলোড করার আগে নিশ্চিত করুন)
         // =====================================================================
         const BIN_ID = "6b085416f735607f31b5d7d6"; 
         const ACCESS_KEY = "$2a$10$NyGLywkBVVltgoRxfLoB.eLAdpBf9pWGd4X8/gw9GvL8Wi6m6rItS"; 
@@ -75,6 +75,8 @@
 
         let allLinks = [];
         let currentlyEditingCode = null;
+        
+        // গিটহাব পেজে baseUrl ঠিকমতো কাজ করার জন্য
         const baseUrl = window.location.origin + window.location.pathname;
 
         function showToast(msg, type = 'success') {
@@ -122,6 +124,7 @@
         const shortCodeQuery = urlParams.get('go');
         
         if (shortCodeQuery) {
+            // ড্যাশবোর্ড হাইড করে রিডাইরেক্ট লোডিং দেখাবে
             document.body.innerHTML = `
                 <div style='text-align:center; margin-top:100px; color:white; font-family:sans-serif;'>
                     <h2><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>
@@ -133,7 +136,9 @@
                 if (link) {
                     const index = data.findIndex(l => l.code === shortCodeQuery);
                     data[index].clicks = (data[index].clicks || 0) + 1;
+                    // ক্লিক কাউন্ট সেভ করা হচ্ছে
                     saveBinData(data).catch(e => console.log("Click update failed"));
+                    // মূল ওয়েবসাইটে রিডাইরেক্ট
                     window.location.replace(link.target);
                 } else {
                     document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
@@ -142,6 +147,7 @@
                 document.body.innerHTML = `<h2 style='text-align:center;margin-top:50px;color:white;'>${e.message}</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>`;
             });
         } else {
+            // কোনো '?go=' না থাকলে ড্যাশবোর্ড লোড হবে
             loadDashboardData();
         }
 
@@ -276,6 +282,7 @@
             
             if (!target) return showToast("অনুগ্রহ করে একটি লিংক দিন", "error");
             
+            // ওদের মতো লম্বা ১৭ ডিজিটের কেস-সেনসিটিভ র‍্যান্ডম কোড
             if (!customCode) {
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
                 let code = '';
