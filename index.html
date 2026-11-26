@@ -67,7 +67,7 @@
 
     <script>
         // =====================================================================
-        // ✅ আপনার JSONBin এর তথ্য বসানো হয়েছে
+        // ✅ আপনার JSONBin এর তথ্য
         // =====================================================================
         const BIN_ID = "6b07be28ab3a7b614481ae3b"; 
         const MASTER_KEY = "$2a$10$536hhqP4FOGiWueDY0wvHuuukkRDJaH/QS.igclqqTM9zzCWFQG60"; 
@@ -77,7 +77,6 @@
         let currentlyEditingCode = null;
         const baseUrl = window.location.origin + window.location.pathname;
 
-        // নোটিফিকেশন দেখানোর ফাংশন
         function showToast(msg, type = 'success') {
             const box = document.getElementById('toastBox');
             const toast = document.createElement('div');
@@ -88,15 +87,18 @@
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // JSONBin থেকে ডেটা পড়া
+        // JSONBin থেকে ডেটা পড়া (DEBUGGING আপডেট)
         async function getBinData() {
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: { 
                     'X-Master-Key': MASTER_KEY,
-                    'X-Bin-Meta': 'false' // শুধু ডেটা পাওয়ার জন্য
+                    'X-Bin-Meta': 'false'
                 }
             });
-            if (!res.ok) throw new Error("ডেটা লোড করা যায়নি। API Key চেক করুন।");
+            if (!res.ok) {
+                const errorText = await res.text(); 
+                throw new Error(`API Error ${res.status}: ${errorText}`);
+            }
             const data = await res.json();
             return data.links || [];
         }
@@ -111,7 +113,10 @@
                 },
                 body: JSON.stringify({ links: contentArray })
             });
-            if (!res.ok) throw new Error("ডেটা সেভ করা যায়নি।");
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Save Error ${res.status}: ${errorText}`);
+            }
         }
 
         // ১. রিডাইরেক্ট লজিক (?go=slug)
@@ -129,11 +134,9 @@
             getBinData().then(data => {
                 const link = data.find(l => l.code === shortCode);
                 if (link) {
-                    // ক্লিক কাউন্ট বাড়ানো (ব্যাকগ্রাউন্ডে)
                     const index = data.findIndex(l => l.code === shortCode);
                     data[index].clicks = (data[index].clicks || 0) + 1;
                     saveBinData(data).catch(e => console.log("Click update failed"));
-
                     window.location.replace(link.target);
                 } else {
                     document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
