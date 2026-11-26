@@ -27,7 +27,7 @@
                 <div class="bg-red-500 p-2.5 rounded-xl shadow-lg shadow-red-500/20"><i class="fa-brands fa-youtube text-white text-xl"></i></div>
                 <div>
                     <h1 class="text-xl font-bold text-white tracking-wide">Video Shortener</h1>
-                    <p class="text-xs text-slate-400">Shorten and manage your links directly via GitHub.</p>
+                    <p class="text-xs text-slate-400">Shorten and manage your links securely.</p>
                 </div>
             </div>
         </div>
@@ -67,48 +67,17 @@
 
     <script>
         // =====================================================================
-        // 🚨 এখানে নতুন টোকেন বসান (আর কাউকে দেবেন না)
+        // ✅ আপনার JSONBin এর তথ্য বসানো হয়েছে
         // =====================================================================
-        const GH_TOKEN = "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"; 
-        const GH_OWNER = "borubiw1-hub"; 
-        const GH_REPO = "technologyhot";
-        const FILE_PATH = 'links.json';
-        const GH_BRANCH = 'main'; 
+        const BIN_ID = "6b07be28ab3a7b614481ae3b"; 
+        const MASTER_KEY = "$2a$10$536hhqP4FOGiWueDY0wvHuuukkRDJaH/QS.igclqqTM9zzCWFQG60"; 
         // =====================================================================
 
         let allLinks = [];
         let currentlyEditingCode = null;
         const baseUrl = window.location.origin + window.location.pathname;
 
-        // ১. রিডাইরেক্ট লজিক (?go=slug)
-        const urlParams = new URLSearchParams(window.location.search);
-        const shortCode = urlParams.get('go');
-        if (shortCode) {
-            document.body.innerHTML = `
-                <div style='text-align:center; margin-top:100px; color:white; font-family:sans-serif;'>
-                    <h2><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>
-                    <p style='color:#64748b; margin-top:10px;'>Please wait...</p>
-                    <a href="./" style="color:#38bdf8; margin-top: 30px; display: inline-block; text-decoration: none; background: #1e293b; padding: 10px 20px; border-radius: 8px;">← Back to Dashboard</a>
-                </div>
-            `;
-            
-            const rawUrl = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${FILE_PATH}`;
-            fetch(rawUrl + '?t=' + Date.now())
-                .then(res => res.json())
-                .then(data => {
-                    const link = data.find(l => l.code === shortCode);
-                    if (link) {
-                        window.location.replace(link.target);
-                    } else {
-                        document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
-                    }
-                }).catch(() => {
-                    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Error loading data!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
-                });
-        } else {
-            loadDashboardData();
-        }
-
+        // নোটিফিকেশন দেখানোর ফাংশন
         function showToast(msg, type = 'success') {
             const box = document.getElementById('toastBox');
             const toast = document.createElement('div');
@@ -119,60 +88,71 @@
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        async function getGitHubFile() {
-            const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${FILE_PATH}?ref=${GH_BRANCH}`, {
+        // JSONBin থেকে ডেটা পড়া
+        async function getBinData() {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: { 
-                    Authorization: `Bearer ${GH_TOKEN}`,
-                    Accept: "application/vnd.github.v3+json"
+                    'X-Master-Key': MASTER_KEY,
+                    'X-Bin-Meta': 'false' // শুধু ডেটা পাওয়ার জন্য
                 }
             });
-            if (res.status === 404) return { content: [], sha: null };
-            
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(`API Error ${res.status}: ${errData.message || 'Check Token/Repo/Branch'}`);
-            }
+            if (!res.ok) throw new Error("ডেটা লোড করা যায়নি। API Key চেক করুন।");
             const data = await res.json();
-            const contentStr = decodeURIComponent(escape(atob(data.content)));
-            return { content: JSON.parse(contentStr), sha: data.sha };
+            return data.links || [];
         }
 
-        async function saveGitHubFile(contentArray, commitMessage) {
-            const { sha } = await getGitHubFile(); 
-            const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(contentArray, null, 2))));
-            
-            const bodyData = { 
-                message: commitMessage, 
-                content: contentBase64, 
-                branch: GH_BRANCH 
-            };
-            
-            if (sha) {
-                bodyData.sha = sha;
-            }
-
-            const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${FILE_PATH}`, {
+        // JSONBin-এ ডেটা সেভ করা
+        async function saveBinData(contentArray) {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
-                headers: { 
-                    Authorization: `Bearer ${GH_TOKEN}`, 
-                    'Content-Type': 'application/json' 
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': MASTER_KEY
                 },
-                body: JSON.stringify(bodyData)
+                body: JSON.stringify({ links: contentArray })
             });
-            
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(`Save Error ${res.status}: ${errData.message || 'Check Permissions'}`);
-            }
+            if (!res.ok) throw new Error("ডেটা সেভ করা যায়নি।");
         }
 
+        // ১. রিডাইরেক্ট লজিক (?go=slug)
+        const urlParams = new URLSearchParams(window.location.search);
+        const shortCode = urlParams.get('go');
+        
+        if (shortCode) {
+            document.body.innerHTML = `
+                <div style='text-align:center; margin-top:100px; color:white; font-family:sans-serif;'>
+                    <h2><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>
+                    <p style='color:#64748b; margin-top:10px;'>Please wait...</p>
+                    <a href="./" style="color:#38bdf8; margin-top: 30px; display: inline-block; text-decoration: none; background: #1e293b; padding: 10px 20px; border-radius: 8px;">← Back to Dashboard</a>
+                </div>
+            `;
+            getBinData().then(data => {
+                const link = data.find(l => l.code === shortCode);
+                if (link) {
+                    // ক্লিক কাউন্ট বাড়ানো (ব্যাকগ্রাউন্ডে)
+                    const index = data.findIndex(l => l.code === shortCode);
+                    data[index].clicks = (data[index].clicks || 0) + 1;
+                    saveBinData(data).catch(e => console.log("Click update failed"));
+
+                    window.location.replace(link.target);
+                } else {
+                    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
+                }
+            }).catch(e => {
+                document.body.innerHTML = `<h2 style='text-align:center;margin-top:50px;color:white;'>${e.message}</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>`;
+            });
+        } else {
+            loadDashboardData();
+        }
+
+        // ড্যাশবোর্ড লোড
         async function loadDashboardData() {
             const tbody = document.getElementById('linksTable');
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading from GitHub...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading...</td></tr>';
             
             try {
-                const { content } = await getGitHubFile();
-                allLinks = content.map(link => ({
+                let data = await getBinData();
+                allLinks = data.map(link => ({
                     ...link,
                     clicks: link.clicks || 0
                 }));
@@ -183,6 +163,7 @@
             }
         }
 
+        // টেবিল রেন্ডার
         function renderTable() {
             const tbody = document.getElementById('linksTable');
             tbody.innerHTML = '';
@@ -268,11 +249,11 @@
             if (!newTarget) return showToast("URL খালি রাখা যাবে না", "error");
 
             try {
-                const { content } = await getGitHubFile();
+                const content = await getBinData();
                 const index = content.findIndex(l => l.code === code);
                 if (index > -1) {
                     content[index].target = newTarget;
-                    await saveGitHubFile(content, `Update link: ${code}`);
+                    await saveBinData(content);
                     showToast("সফলভাবে আপডেট হয়েছে!");
                     loadDashboardData();
                 }
@@ -282,9 +263,9 @@
         async function deleteLink(code) {
             if (!confirm("আপনি কি নিশ্চিতভাবে এই লিংকটি ডিলিট করতে চান?")) return;
             try {
-                const { content } = await getGitHubFile();
+                const content = await getBinData();
                 const newContent = content.filter(l => l.code !== code);
-                await saveGitHubFile(newContent, `Delete link: ${code}`);
+                await saveBinData(newContent);
                 showToast("লিংক ডিলিট হয়েছে।", "error");
                 loadDashboardData();
             } catch (e) { showToast(e.message, "error"); }
@@ -306,7 +287,7 @@
             btn.disabled = true;
 
             try {
-                const { content } = await getGitHubFile();
+                const content = await getBinData();
                 if (content.find(l => l.code === customCode)) {
                     throw new Error("এই নামে আগে থেকেই একটি লিংক আছে!");
                 }
@@ -319,7 +300,7 @@
                 };
 
                 content.unshift(newLink);
-                await saveGitHubFile(content, `Add link: ${customCode}`);
+                await saveBinData(content);
                 
                 document.getElementById('longUrl').value = '';
                 document.getElementById('customCode').value = '';
