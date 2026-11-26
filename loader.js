@@ -1,6 +1,6 @@
 (async function() {
-    // 🚨 তোমার নতুন JSONBin Details
-    const BIN_ID = "6b07bf90ab3a7b614481b077"; 
+    // 🚨 আপনার নতুন JSONBin Details এখানে বসানো হলো
+    const BIN_ID = "6b0850a6f735607f31b5ca54"; 
     const ACCESS_KEY = "$2a$10$CNA2OL0KRF4Z4HTFg1ZUm.YruuiBTLxTC8Pb0i/8ut98glgn/HNoS"; 
 
     const hash = window.location.hash;
@@ -108,7 +108,6 @@
 
                 } catch (err) {
                     // Cross-origin errors: ব্রাউজার গুগলের DOM রিড করতে দেবে না। 
-                    // তাই এই অংশে এরর আসলে আমরা কিছু করব না, ইউজার ম্যানুয়ালি ক্লিক করলে লিংক ধরতে পারব।
                 }
 
                 if (attempts >= maxAttempts) {
