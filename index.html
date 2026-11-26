@@ -67,9 +67,9 @@
 
     <script>
         // =====================================================================
-        // ✅ আপনার JSONBin এর তথ্য
+        // ✅ আপনার নতুন JSONBin এর তথ্য বসানো হয়েছে
         // =====================================================================
-        const BIN_ID = "6b07be28ab3a7b614481ae3b"; 
+        const BIN_ID = "6b07bf90ab3a7b614481b077"; 
         const MASTER_KEY = "$2a$10$536hhqP4FOGiWueDY0wvHuuukkRDJaH/QS.igclqqTM9zzCWFQG60"; 
         // =====================================================================
 
@@ -87,7 +87,7 @@
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // JSONBin থেকে ডেটা পড়া (DEBUGGING আপডেট)
+        // JSONBin থেকে ডেটা পড়া
         async function getBinData() {
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: { 
@@ -100,6 +100,7 @@
                 throw new Error(`API Error ${res.status}: ${errorText}`);
             }
             const data = await res.json();
+            // যদি বিনে ডেটা না থাকে বা links না থাকে, তবে খালি অ্যারে রিটার্ন করবে
             return data.links || [];
         }
 
