@@ -42,14 +42,25 @@
             </button>
         </div>
 
+        <!-- Bookmarklet Generator (Important!) -->
+        <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-4 mb-6 text-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <p class="text-white font-bold mb-1"><i class="fa-solid fa-triangle-exclamation text-yellow-400"></i> গুগলের লিংক কাজ করানোর জন্য:</p>
+                <p class="text-slate-400 text-xs">যে কেউ আপনার গুগল লিংকে ক্লিক করলে সরাসরি আপনার সাইটে আসতে চাইলে, তাকে প্রথমে নিচের বাটনটি ব্রাউজারের বুকমার্ক বারে ড্র্যাগ করে সেভ করতে হবে।</p>
+            </div>
+            <a id="bookmarkletBtn" href="#" onclick="alert('এটি ড্র্যাগ করে ব্রাউজারের বুকমার্ক বারে ড্রপ করুন।'); return false;" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap cursor-move">
+                <i class="fa-solid fa-bookmark mr-1"></i> Save Redirector
+            </a>
+        </div>
+
         <!-- Data Table -->
         <div class="table-container">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead class="table-header">
                         <tr>
-                            <th class="p-4 w-[50%]">Original URL</th>
-                            <th class="p-4 w-[25%]">Short Link</th>
+                            <th class="p-4 w-[40%]">Original URL</th>
+                            <th class="p-4 w-[35%]">Short Links (Google & Direct)</th>
                             <th class="p-4 w-[10%] text-center">Clicks</th>
                             <th class="p-4 w-[15%] text-right">Actions</th>
                         </tr>
@@ -67,15 +78,21 @@
 
     <script>
         // =====================================================================
-        // 🚨 এখানে আপনার নতুন Bin ID এবং Access Key বসান 
+        // 🚨 এখানে আপনার JSONBin এর ID এবং Access Key বসান 
         // =====================================================================
-        const BIN_ID = "6b07bf90ab3a7b614481b077"; // <--- আপনার বর্তমান বিনের আইডি দিন
-        const ACCESS_KEY = "$2a$10$HuTArk18ADze3MttIsfEyOf1NQ8swvgTbV/h62zD4KyXC595yi7cC"; // <--- আপনার নতুন Access Key
+        const BIN_ID = "6b07bf90ab3a7b614481b077"; 
+        const ACCESS_KEY = "$2a$10$HuTArk18ADze3MttIsfEyOf1NQ8swvgTbV/h62zD4KyXC595yi7cC"; 
         // =====================================================================
 
         let allLinks = [];
         let currentlyEditingCode = null;
         const baseUrl = window.location.origin + window.location.pathname;
+
+        // --- বুকমার্কলেট জেনারেটর (Bookmarklet Logic) ---
+        // এই কোডটি ইউজার তার ব্রাউজারে সেভ করবে। সে গুগলের লিংকে ক্লিক করলে এই কোডটি রান হবে এবং তাকে আপনার সাইটে নিয়ে যাবে।
+        const bmCode = `javascript:(function(){var h=window.location.hash;if(h&&h.includes('pinurl=')){var c=h.split('pinurl=')[1];fetch('https://api.jsonbin.io/v3/b/${BIN_ID}/latest',{headers:{'X-Access-Key':'${ACCESS_KEY}','X-Bin-Meta':'false'}}).then(r=>r.json()).then(d=>{var l=d.links.find(x=>x.code===c);if(l){window.location.href=l.target}else{alert('Link Not Found!')}}).catch(e=>alert('Error!'))}else{alert('No PinURL found in address bar!')}})();`;
+        document.getElementById('bookmarkletBtn').href = bmCode;
+
 
         function showToast(msg, type = 'success') {
             const box = document.getElementById('toastBox');
@@ -87,7 +104,6 @@
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // JSONBin থেকে ডেটা পড়া
         async function getBinData() {
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: { 
@@ -103,7 +119,6 @@
             return data.links || [];
         }
 
-        // JSONBin-এ ডেটা সেভ করা
         async function saveBinData(contentArray) {
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
@@ -119,22 +134,29 @@
             }
         }
 
-        // ১. রিডাইরেক্ট লজিক (?go=slug)
+        // ১. রিডাইরেক্ট লজিক (ডাইরেক্ট ?go=slug এবং হ্যাশ #pinurl=slug দুটোই সাপোর্ট করবে)
         const urlParams = new URLSearchParams(window.location.search);
-        const shortCode = urlParams.get('go');
+        const shortCodeQuery = urlParams.get('go');
+        const hash = window.location.hash;
+        let shortCodeHash = null;
         
-        if (shortCode) {
+        if (hash && hash.includes('pinurl=')) {
+            shortCodeHash = hash.split('pinurl=')[1];
+        }
+
+        const activeCode = shortCodeQuery || shortCodeHash;
+
+        if (activeCode) {
             document.body.innerHTML = `
                 <div style='text-align:center; margin-top:100px; color:white; font-family:sans-serif;'>
                     <h2><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>
                     <p style='color:#64748b; margin-top:10px;'>Please wait...</p>
-                    <a href="./" style="color:#38bdf8; margin-top: 30px; display: inline-block; text-decoration: none; background: #1e293b; padding: 10px 20px; border-radius: 8px;">← Back to Dashboard</a>
                 </div>
             `;
             getBinData().then(data => {
-                const link = data.find(l => l.code === shortCode);
+                const link = data.find(l => l.code === activeCode);
                 if (link) {
-                    const index = data.findIndex(l => l.code === shortCode);
+                    const index = data.findIndex(l => l.code === activeCode);
                     data[index].clicks = (data[index].clicks || 0) + 1;
                     saveBinData(data).catch(e => console.log("Click update failed"));
                     window.location.replace(link.target);
@@ -148,7 +170,6 @@
             loadDashboardData();
         }
 
-        // ড্যাশবোর্ড লোড
         async function loadDashboardData() {
             const tbody = document.getElementById('linksTable');
             tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading...</td></tr>';
@@ -166,7 +187,6 @@
             }
         }
 
-        // টেবিল রেন্ডার
         function renderTable() {
             const tbody = document.getElementById('linksTable');
             tbody.innerHTML = '';
@@ -177,7 +197,9 @@
             }
 
             allLinks.forEach(link => {
-                const finalShortLink = `${baseUrl}?go=${link.code}`;
+                // দুই ধরনের লিংক তৈরি
+                const directShortLink = `${baseUrl}?go=${link.code}`;
+                const googleShortLink = `https://www.google.com/#pinurl=${link.code}`;
                 
                 let domain = "link";
                 try { domain = new URL(link.target).hostname.replace('www.', ''); } catch(e) {}
@@ -196,9 +218,17 @@
                         </div>
                     </td>
                     <td class="p-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-emerald-400 font-mono text-sm bg-emerald-500/10 px-2 py-1 rounded">${link.code}</span>
-                            <button onclick="copyText('${finalShortLink}')" class="icon-btn" title="Copy Full Link"><i class="fa-regular fa-copy text-xs"></i></button>
+                        <div class="flex flex-col gap-2">
+                            <!-- গুগল লিংক বাটন -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-blue-400 font-mono text-[11px] bg-blue-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${googleShortLink}">google.com/#${link.code}</span>
+                                <button onclick="copyText('${googleShortLink}')" class="icon-btn hover:text-blue-400 hover:border-blue-400" title="Copy Google Link"><i class="fa-brands fa-google text-xs"></i></button>
+                            </div>
+                            <!-- ডাইরেক্ট লিংক বাটন -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${directShortLink}">Direct Link</span>
+                                <button onclick="copyText('${directShortLink}')" class="icon-btn hover:text-emerald-400 hover:border-emerald-400" title="Copy Direct Link"><i class="fa-regular fa-copy text-xs"></i></button>
+                            </div>
                         </div>
                     </td>
                     <td class="p-4 text-center">
@@ -320,7 +350,7 @@
 
         function copyText(text) {
             navigator.clipboard.writeText(text);
-            showToast("কপি হয়েছে: " + text);
+            showToast("কপি হয়েছে!");
         }
     </script>
 </body>
