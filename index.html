@@ -273,9 +273,9 @@
                                 <span class="text-blue-400 font-mono text-[11px] bg-blue-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${googleShortLink}">google.com/#vs=${link.code}</span>
                                 <button onclick="copyText('${googleShortLink}')" class="icon-btn hover:text-blue-400 hover:border-blue-400" title="Copy Google Link"><i class="fa-brands fa-google text-xs"></i></button>
                             </div>
-                            <!-- ডাইরেক্ট লিংক বাটন (এখন সরাসরি লিংক দেখাবে) -->
+                            <!-- ডাইরেক্ট লিংক বাটন (এখন ডোমেইন ছাড়া দেখাবে) -->
                             <div class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${directShortLink}">${directShortLink}</span>
+                                <span class="text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${directShortLink}">?go=${link.code}</span>
                                 <button onclick="copyText('${directShortLink}')" class="icon-btn hover:text-emerald-400 hover:border-emerald-400" title="Copy Direct Link"><i class="fa-regular fa-copy text-xs"></i></button>
                             </div>
                         </div>
