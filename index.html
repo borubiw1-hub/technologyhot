@@ -1,406 +1,157 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Shortener Dashboard</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2881/2881142.png">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Watch Video - YouTube</title>
     <style>
-        body { background-color: #0b1120; color: #94a3b8; font-family: sans-serif; }
-        .table-container { background-color: #0f172a; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7); }
-        .table-header { background-color: #111827; border-bottom: 1px solid #1e293b; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-        .table-row { border-bottom: 1px solid #1e293b; transition: 0.2s; }
-        .table-row:hover { background-color: #1e293b; }
-        .icon-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #1e293b; color: #94a3b8; transition: 0.2s; cursor: pointer; border: 1px solid #334155; }
-        .icon-btn:hover { background: #334155; color: white; }
-        .edit-row { background-color: #0f172a; border-bottom: 1px solid #1e293b; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0f0f0f; /* ইউটিউবের ডার্ক থিম */
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .video-player {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* একটি ডামি ইউটিউব প্লে বাটন */
+        .play-button {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 0, 0, 0.9);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            background-color: #ff0000;
+        }
+
+        .play-button svg {
+            width: 35px;
+            height: 35px;
+            fill: white;
+            margin-left: 5px;
+        }
+
+        .video-info {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .video-info h1 {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .video-info p {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        /* লোডিং অ্যানিমেশন */
+        .loading-text {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ccc;
+            display: none; /* শুরুতে হাইড থাকবে */
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body>
 
-    <!-- Login Screen (Hidden by default) -->
-    <div id="loginScreen" class="fixed inset-0 bg-[#0b1120] z-50 flex items-center justify-center hidden">
-        <div class="bg-[#0f172a] p-8 rounded-xl border border-[#1e293b] shadow-2xl w-full max-w-sm mx-4">
-            <div class="flex justify-center mb-4">
-                <div class="bg-red-500 p-3 rounded-xl shadow-lg shadow-red-500/20"><i class="fa-brands fa-youtube text-white text-2xl"></i></div>
+    <div class="container">
+        <!-- ভিডিও প্লেয়ার সেকশন -->
+        <div class="video-player" id="videoPlayer">
+            <div class="play-button">
+                <svg viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
             </div>
-            <h2 class="text-white text-xl font-bold mb-6 text-center">Admin Login</h2>
-            <input type="password" id="passwordInput" onkeypress="handleEnter(event)" class="w-full bg-[#0b1120] border border-[#1e293b] rounded-lg px-4 py-3 text-white mb-4 outline-none focus:border-sky-500 transition" placeholder="Enter Password">
-            <button onclick="checkPassword()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-lg transition">Login</button>
-            <p id="loginError" class="text-red-500 text-xs text-center mt-3 hidden">ভুল পাসওয়ার্ড!</p>
+        </div>
+
+        <!-- ভিডিওর টাইটেল ও ইনফো -->
+        <div class="video-info">
+            <h1 id="videoTitle">Loading Video Preview...</h1>
+            <p>Please wait while the video loads...</p>
+        </div>
+
+        <!-- রিডাইরেক্ট হওয়ার সময় এই লেখাটি দেখাবে -->
+        <div class="loading-text" id="loadingText">
+            <i>Redirecting to content...</i>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
-    <div id="mainDashboard" class="max-w-7xl mx-auto hidden">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-8 border-b border-slate-800 pb-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-red-500 p-2.5 rounded-xl shadow-lg shadow-red-500/20"><i class="fa-brands fa-youtube text-white text-xl"></i></div>
-                <div>
-                    <h1 class="text-xl font-bold text-white tracking-wide">Video Shortener</h1>
-                    <p class="text-xs text-slate-400">Shorten and manage your links securely.</p>
-                </div>
-            </div>
-            <button onclick="logout()" class="text-slate-400 hover:text-red-400 text-sm font-bold flex items-center gap-2 transition px-3 py-2 rounded-lg hover:bg-red-500/10">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </button>
-        </div>
-
-        <!-- Create Link Box -->
-        <div class="bg-[#0f172a] border border-[#1e293b] rounded-xl p-4 mb-6 flex flex-col md:flex-row gap-3">
-            <input type="url" id="longUrl" placeholder="Paste YouTube or any Long URL here..." class="flex-1 bg-[#0b1120] border border-[#1e293b] rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-sky-500 transition">
-            <input type="text" id="customCode" placeholder="Custom Slug (Optional)" class="w-full md:w-48 bg-[#0b1120] border border-[#1e293b] rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-sky-500 transition">
-            <button onclick="createShortLink()" id="createBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-8 py-2.5 rounded-lg text-sm font-bold transition shadow-lg shadow-sky-600/20 flex items-center justify-center gap-2">
-                <span id="btnText">Shorten Link</span>
-                <i id="btnIcon" class="fa-solid fa-scissors"></i>
-            </button>
-        </div>
-
-        <!-- Bookmarklet Generator (Important!) -->
-        <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-4 mb-6 text-sm flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-                <p class="text-white font-bold mb-1"><i class="fa-solid fa-triangle-exclamation text-yellow-400"></i> গুগলের লিংক কাজ করানোর জন্য:</p>
-                <p class="text-slate-400 text-xs">যে কেউ আপনার গুগল লিংকে (google.com/#vs=...) ক্লিক করলে সরাসরি আপনার সাইটে আসতে চাইলে, তাকে প্রথমে নিচের বাটনটি ব্রাউজারের বুকমার্ক বারে ড্র্যাগ করে সেভ করতে হবে।</p>
-            </div>
-            <a id="bookmarkletBtn" href="#" onclick="alert('এটি মাউস দিয়ে ড্র্যাগ করে ব্রাউজারের বুকমার্ক বারে ড্রপ করুন। মোবাইলে হলে বুকমার্ক হিসেবে সেভ করুন।'); return false;" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap cursor-move">
-                <i class="fa-solid fa-bookmark mr-1"></i> Save Redirector
-            </a>
-        </div>
-
-        <!-- Data Table -->
-        <div class="table-container">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="table-header">
-                        <tr>
-                            <th class="p-4 w-[40%]">Original URL</th>
-                            <th class="p-4 w-[35%]">Short Links (Google & Direct)</th>
-                            <th class="p-4 w-[10%] text-center">Clicks</th>
-                            <th class="p-4 w-[15%] text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="linksTable">
-                        <!-- Data will load here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toastBox" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
-
+    <!-- 
+      =========================================
+      আপনার অ্যাডস্ট্রেরা (Adsterra) লিংকটি এখানে বসান
+      =========================================
+    -->
     <script>
-        // =====================================================================
-        // 🚨 এখানে আপনার JSONBin এর ID এবং Access Key বসান 
-        // =====================================================================
-        const BIN_ID = "6b0859cff735607f31b5e9dc"; 
-        const ACCESS_KEY = "$2a$10$bDswldQGUS.Jq.MHZA.pzO06s5BwNowwkvxyN9MjfWxL5IRPCVdly"; 
-        // =====================================================================
+        // ⚠️ এখানে আপনার Adsterra লিংকটি দিন (যেমন: "https://www.adsterra.com/your-link")
+        const adsterraLink = "https://falsifydwight.com/spds309un?key=e9694b8e0211323fcca70e9ce67d7d3a"; 
 
-        // 🔐 ড্যাশবোর্ডের পাসওয়ার্ড (এখানে পরিবর্তন করুন)
-        const ADMIN_PASSWORD = "Pa$$w0rd!"; 
-
-        let allLinks = [];
-        let currentlyEditingCode = null;
-        const baseUrl = window.location.origin + window.location.pathname;
-
-        // --- বুকমার্কলেট জেনারেটর (Bookmarklet Logic) ---
-        const bmCode = `javascript:(function(){var h=window.location.hash;if(h&&h.includes('vs=')){var c=h.split('vs=')[1];fetch('https://api.jsonbin.io/v3/b/${BIN_ID}/latest',{headers:{'X-Access-Key':'${ACCESS_KEY}','X-Bin-Meta':'false'}}).then(r=>r.json()).then(d=>{var l=d.links.find(x=>x.code===c);if(l){window.location.href=l.target}else{alert('Link Not Found!')}}).catch(e=>alert('Error!'))}else{alert('No Video Shortener Link found in address bar!')}})();`;
-        document.getElementById('bookmarkletBtn').href = bmCode;
-
-        // --- লগিন সিস্টেম লজিক ---
-        function handleEnter(e) {
-            if (e.key === 'Enter') checkPassword();
-        }
-
-        function checkPassword() {
-            const pass = document.getElementById('passwordInput').value;
-            if (pass === ADMIN_PASSWORD) {
-                localStorage.setItem('dashboardAuth', 'true');
-                showDashboard();
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('dashboardAuth');
-            window.location.reload();
-        }
-
-        function showDashboard() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('mainDashboard').classList.remove('hidden');
-            loadDashboardData();
-        }
-
-        // --- রিডাইরেক্ট লজিক এবং পেজ লোড ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const shortCodeQuery = urlParams.get('go');
-        const hash = window.location.hash;
-        let shortCodeHash = null;
+        // ইউটিউব লিংকটি (ঐচ্ছিক: আপনি চাইলে এখানে আপনার ভিডিও লিংক দিতে পারেন)
+        const youtubeLink = "https://www.youtube.com/watch?v=TmRgK-pXH9c&list=RDTmRgK-pXH9c&start_radio=1"; 
         
-        if (hash && hash.includes('vs=')) {
-            shortCodeHash = hash.split('vs=')[1];
-        }
+        // ভিডিওর টাইটেল (ঐচ্ছিক)
+        const videoTitle = "Amazing Video - Must Watch!";
 
-        const activeCode = shortCodeQuery || shortCodeHash;
+        // ১. পেজ লোড হওয়ার পর টাইটেল সেট করা
+        document.getElementById('videoTitle').innerText = videoTitle;
 
-        if (activeCode) {
-            // যদি ইউজার লিংকে ক্লিক করে আসে, তবে সোজা রিডাইরেক্ট হবে (লগিন লাগবে না)
-            document.body.innerHTML = `
-                <div style='text-align:center; margin-top:100px; color:white; font-family:sans-serif;'>
-                    <h2><i class='fa-solid fa-spinner fa-spin'></i> Redirecting...</h2>
-                    <p style='color:#64748b; margin-top:10px;'>Please wait...</p>
-                </div>
-            `;
-            getBinData().then(data => {
-                const link = data.find(l => l.code === activeCode);
-                if (link) {
-                    const index = data.findIndex(l => l.code === activeCode);
-                    data[index].clicks = (data[index].clicks || 0) + 1;
-                    saveBinData(data).catch(e => console.log("Click update failed"));
-                    window.location.replace(link.target);
-                } else {
-                    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:white;'>Link Not Found!</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>";
-                }
-            }).catch(e => {
-                document.body.innerHTML = `<h2 style='text-align:center;margin-top:50px;color:white;'>${e.message}</h2><div style='text-align:center;'><a href='./' style='color:#38bdf8;'>Go to Dashboard</a></div>`;
-            });
-        } else {
-            // ড্যাশবোর্ডে ঢোকার সময় অথেন্টিকেশন চেক
-            if (localStorage.getItem('dashboardAuth') === 'true') {
-                showDashboard();
-            } else {
-                document.getElementById('loginScreen').classList.remove('hidden');
-            }
-        }
-
-        function showToast(msg, type = 'success') {
-            const box = document.getElementById('toastBox');
-            const toast = document.createElement('div');
-            toast.className = `px-5 py-3 rounded-xl shadow-xl text-white font-bold text-sm transform transition-all duration-300 translate-x-10 opacity-0 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
-            toast.innerHTML = msg;
-            box.appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-x-10', 'opacity-0'), 10);
-            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        async function getBinData() {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                headers: { 
-                    'X-Access-Key': ACCESS_KEY,
-                    'X-Bin-Meta': 'false'
-                }
-            });
-            if (!res.ok) {
-                const errorText = await res.text(); 
-                throw new Error(`API Error ${res.status}: ${errorText}`);
-            }
-            const data = await res.json();
-            return data.links || [];
-        }
-
-        async function saveBinData(contentArray) {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Access-Key': ACCESS_KEY
-                },
-                body: JSON.stringify({ links: contentArray })
-            });
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(`Save Error ${res.status}: ${errorText}`);
-            }
-        }
-
-        async function loadDashboardData() {
-            const tbody = document.getElementById('linksTable');
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading...</td></tr>';
+        // ২. ২ সেকেন্ড (২০০০ মিলিসেকেন্ড) পর রিডাইরেক্ট হবে
+        setTimeout(function() {
+            // লোডিং টেক্সট দেখানো
+            document.getElementById('loadingText').style.display = 'block';
             
-            try {
-                let data = await getBinData();
-                allLinks = data.map(link => ({
-                    ...link,
-                    clicks: link.clicks || 0
-                }));
-                allLinks.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                renderTable();
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500 font-bold">${e.message}</td></tr>`;
-            }
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('linksTable');
-            tbody.innerHTML = '';
-
-            if (allLinks.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500">কোনো লিংক নেই। উপরে নতুন লিংক দিন।</td></tr>';
-                return;
-            }
-
-            allLinks.forEach(link => {
-                const directShortLink = `${baseUrl}?go=${link.code}`;
-                const googleShortLink = `https://www.google.com/#vs=${link.code}`;
-                
-                let domain = "link";
-                try { domain = new URL(link.target).hostname.replace('www.', ''); } catch(e) {}
-                const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-
-                const row = document.createElement('tr');
-                row.className = 'table-row';
-                row.innerHTML = `
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <img src="${faviconUrl}" class="w-8 h-8 rounded-lg bg-[#1e293b] p-1" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2881/2881142.png'">
-                            <div class="min-w-0">
-                                <div class="text-sky-400 font-bold text-sm truncate w-64 md:w-96" title="${link.target}">${link.target}</div>
-                                <div class="text-xs text-slate-500 mt-0.5">${domain}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-4">
-                        <div class="flex flex-col gap-2">
-                            <!-- গুগল লিংক বাটন -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-blue-400 font-mono text-[11px] bg-blue-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${googleShortLink}">google.com/#vs=${link.code}</span>
-                                <button onclick="copyText('${googleShortLink}')" class="icon-btn hover:text-blue-400 hover:border-blue-400" title="Copy Google Link"><i class="fa-brands fa-google text-xs"></i></button>
-                            </div>
-                            <!-- ডাইরেক্ট লিংক বাটন (এখন ডোমেইন ছাড়া দেখাবে) -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-2 py-1 rounded truncate w-40 md:w-56" title="${directShortLink}">?go=${link.code}</span>
-                                <button onclick="copyText('${directShortLink}')" class="icon-btn hover:text-emerald-400 hover:border-emerald-400" title="Copy Direct Link"><i class="fa-regular fa-copy text-xs"></i></button>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-4 text-center">
-                        <div class="text-white font-bold text-lg">${link.clicks}</div>
-                        <div class="text-[9px] text-slate-500 uppercase">Clicks</div>
-                    </td>
-                    <td class="p-4">
-                        <div class="flex items-center justify-end gap-2">
-                            <button onclick="toggleEditRow('${link.code}')" class="icon-btn hover:text-sky-400 hover:border-sky-400" title="Edit URL"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="deleteLink('${link.code}')" class="icon-btn hover:text-red-400 hover:border-red-400" title="Delete"><i class="fa-regular fa-trash-can text-xs"></i></button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-
-                const editRow = document.createElement('tr');
-                editRow.id = `edit-row-${link.code}`;
-                editRow.className = 'edit-row hidden';
-                editRow.innerHTML = `
-                    <td colspan="4" class="p-6">
-                        <div class="flex flex-col gap-3 max-w-4xl bg-[#0b1120] p-4 rounded-lg border border-slate-700">
-                            <label class="text-xs text-sky-500 font-bold uppercase tracking-wider"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit Destination URL</label>
-                            <div class="flex flex-col md:flex-row gap-3">
-                                <input type="url" id="edit-target-${link.code}" value="${link.target}" class="flex-1 bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-sky-500">
-                                <button onclick="toggleEditRow('${link.code}')" class="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition">Cancel</button>
-                                <button onclick="saveEdit('${link.code}')" class="bg-sky-600 hover:bg-sky-500 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition">Save changes</button>
-                            </div>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(editRow);
-            });
-        }
-
-        function toggleEditRow(code) {
-            const row = document.getElementById(`edit-row-${code}`);
-            if (currentlyEditingCode && currentlyEditingCode !== code) {
-                document.getElementById(`edit-row-${currentlyEditingCode}`).classList.add('hidden');
-            }
-            if (row.classList.contains('hidden')) {
-                row.classList.remove('hidden');
-                currentlyEditingCode = code;
-            } else {
-                row.classList.add('hidden');
-                currentlyEditingCode = null;
-            }
-        }
-
-        async function saveEdit(code) {
-            const newTarget = document.getElementById(`edit-target-${code}`).value.trim();
-            if (!newTarget) return showToast("URL খালি রাখা যাবে না", "error");
-
-            try {
-                const content = await getBinData();
-                const index = content.findIndex(l => l.code === code);
-                if (index > -1) {
-                    content[index].target = newTarget;
-                    await saveBinData(content);
-                    showToast("সফলভাবে আপডেট হয়েছে!");
-                    loadDashboardData();
-                }
-            } catch (e) { showToast(e.message, "error"); }
-        }
-
-        async function deleteLink(code) {
-            if (!confirm("আপনি কি নিশ্চিতভাবে এই লিংকটি ডিলিট করতে চান?")) return;
-            try {
-                const content = await getBinData();
-                const newContent = content.filter(l => l.code !== code);
-                await saveBinData(newContent);
-                showToast("লিংক ডিলিট হয়েছে।", "error");
-                loadDashboardData();
-            } catch (e) { showToast(e.message, "error"); }
-        }
-
-        async function createShortLink() {
-            const target = document.getElementById('longUrl').value.trim();
-            let customCode = document.getElementById('customCode').value.trim().toLowerCase();
+            // রিডাইরেক্ট করা
+            window.location.href = adsterraLink; 
             
-            if (!target) return showToast("অনুগ্রহ করে একটি লিংক দিন", "error");
-            if (!customCode) customCode = Math.random().toString(36).substring(2, 7);
-
-            const btn = document.getElementById('createBtn');
-            const btnText = document.getElementById('btnText');
-            const btnIcon = document.getElementById('btnIcon');
-            
-            btnText.innerText = "Saving...";
-            btnIcon.className = "fa-solid fa-spinner fa-spin";
-            btn.disabled = true;
-
-            try {
-                const content = await getBinData();
-                if (content.find(l => l.code === customCode)) {
-                    throw new Error("এই নামে আগে থেকেই একটি লিংক আছে!");
-                }
-
-                const newLink = {
-                    code: customCode,
-                    target: target,
-                    clicks: 0,
-                    createdAt: Date.now()
-                };
-
-                content.unshift(newLink);
-                await saveBinData(content);
-                
-                document.getElementById('longUrl').value = '';
-                document.getElementById('customCode').value = '';
-                showToast("নতুন শর্ট লিংক তৈরি হয়েছে!");
-                loadDashboardData();
-            } catch (e) { 
-                showToast(e.message, "error"); 
-            } finally {
-                btnText.innerText = "Shorten Link";
-                btnIcon.className = "fa-solid fa-scissors";
-                btn.disabled = false;
-            }
-        }
-
-        function copyText(text) {
-            navigator.clipboard.writeText(text);
-            showToast("কপি হয়েছে!");
-        }
+            // যদি নতুন ট্যাবে খুলতে চান, তাহলে নিচের লাইনটি ব্যবহার করুন (উপরের লাইনটি মুছে):
+            // window.open(adsterraLink, '_blank'); 
+        }, 1000); // ১ সেকেন্ড
     </script>
+
 </body>
 </html>
